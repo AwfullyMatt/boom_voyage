@@ -1,6 +1,11 @@
 use bevy::prelude::*;
+use ron::de::from_reader;
+use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 
-use crate::character::{Backbone, Freedom, Gumption, Nephew, Relation};
+use crate::character::{Backbone, CharacterName, Freedom, Gumption, Nephew, Relation};
 
 pub struct PlayerPlugin;
 
@@ -10,9 +15,9 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Serialize, Deserialize, Clone, Debug)]
 pub struct PlayerBundle {
-    name: Name,
+    name: CharacterName,
     player: Player,
     relation: Relation,
     freedom: Freedom,
@@ -24,7 +29,7 @@ pub struct PlayerBundle {
 impl Default for PlayerBundle {
     fn default() -> Self {
         PlayerBundle {
-            name: Name::new("Player"),
+            name: CharacterName::from("Player"),
             player: Player,
             relation: Relation::Player,
             freedom: Freedom(10),
@@ -35,10 +40,39 @@ impl Default for PlayerBundle {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Player;
 
 fn spawn_player(mut commmands: Commands) {
-    commmands.spawn(PlayerBundle::default());
-    info!("Player spawned.");
+    match deserialize_player() {
+        Ok(player) => {
+            commmands.spawn(player);
+            info!("[SPAWNED] Saved Player Bundle.");
+        }
+        Err(e) => {
+            commmands.spawn(PlayerBundle::default());
+            info!("[SPAWNED] Default Player Bundle.");
+            eprintln!("{:?}", e)
+        }
+    }
+}
+
+fn deserialize_player() -> Result<PlayerBundle, Box<dyn std::error::Error>> {
+    let cmd = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let path = PathBuf::from(format!("{}/assets/ron/player.ron", cmd));
+
+    info!(
+        "Attempting to deserialize Player from\n
+        {:?}",
+        path
+    );
+    let file = File::open(path.clone())?;
+    let reader = BufReader::new(file);
+    let player_bundle: PlayerBundle = from_reader(reader)?;
+    info!(
+        "Player Bundle -- \n
+        {:?}",
+        player_bundle.clone()
+    );
+    Ok(player_bundle)
 }

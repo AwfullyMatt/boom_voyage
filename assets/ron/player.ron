@@ -1,0 +1,11 @@
+(
+    name: (
+	"Player",
+    ),
+    player: (),
+    relation: Player,
+    freedom: (10),
+    gumption: (10),
+    backbone: (10),
+    nephew: (10),
+)
