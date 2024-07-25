@@ -1,4 +1,5 @@
 mod character;
+mod combat;
 mod enemy;
 mod player;
 
@@ -7,6 +8,7 @@ use bevy::{
     prelude::*,
 };
 use character::CharacterPlugin;
+use combat::CombatPlugin;
 use player::PlayerPlugin;
 
 pub struct GamePlugin;
@@ -37,9 +39,11 @@ impl Plugin for GamePlugin {
                     ..default()
                 }),
         );
-        app.add_plugins((PlayerPlugin, CharacterPlugin));
+        app.add_plugins((PlayerPlugin, CharacterPlugin, CombatPlugin));
         app.insert_resource(Msaa::Off);
         app.insert_resource(ClearColor(Color::linear_rgb(0., 0., 0.)));
+        app.init_state::<AppState>();
+        app.init_state::<GameState>();
         app.add_systems(Startup, spawn_camera);
     }
 }
@@ -50,4 +54,19 @@ fn spawn_camera(mut commands: Commands) {
         Camera2dBundle::default(),
         IsDefaultUiCamera,
     ));
+}
+
+#[derive(States, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub enum AppState {
+    #[default]
+    Loading,
+    Menu,
+    Playing,
+}
+
+#[derive(States, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+pub enum GameState {
+    #[default]
+    Home,
+    Combat,
 }
