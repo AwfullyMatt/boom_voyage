@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::WindowResized};
 
-use crate::AppState;
+use crate::{AppState, GameState};
 
 pub struct CombatPlugin;
 
@@ -12,7 +12,7 @@ impl Plugin for CombatPlugin {
             .add_systems(OnEnter(AppState::Loading), (setup_columns, setup_runway))
             .add_systems(
                 Update,
-                (adjust_columns, adjust_runway).run_if(in_state(AppState::Playing)),
+                (adjust_columns, adjust_runway).run_if(in_state(GameState::Combat)),
             );
     }
 }
@@ -79,9 +79,9 @@ fn setup_columns(query_window: Query<&Window>, mut columns: ResMut<Columns>) {
     }
 }
 
-fn adjust_columns(query_window: Query<&Window, Changed<Window>>, mut columns: ResMut<Columns>) {
-    if let Ok(window) = query_window.get_single() {
-        let width = window.resolution.width();
+fn adjust_columns(mut ev_window_resize: EventReader<WindowResized>, mut columns: ResMut<Columns>) {
+    for ev in ev_window_resize.read() {
+        let width = ev.width;
         let column_width = width / 5.;
         columns.first.x = column_width / 2.;
         columns.second.x = columns.first.x + column_width;
@@ -119,9 +119,9 @@ fn setup_runway(query_window: Query<&Window>, mut runway: ResMut<Runway>) {
     }
 }
 
-fn adjust_runway(query_window: Query<&Window, Changed<Window>>, mut runway: ResMut<Runway>) {
-    if let Ok(window) = query_window.get_single() {
-        let height = window.resolution.height();
+fn adjust_runway(mut ev_window_resized: EventReader<WindowResized>, mut runway: ResMut<Runway>) {
+    for ev in ev_window_resized.read() {
+        let height = ev.height;
         let start = 100.;
         let end = height - 100.;
 

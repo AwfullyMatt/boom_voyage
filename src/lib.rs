@@ -3,6 +3,7 @@ mod combat;
 mod enemy;
 mod menu;
 mod player;
+mod settings;
 
 use bevy::{
     audio::{AudioPlugin, Volume},
@@ -47,7 +48,7 @@ impl Plugin for GamePlugin {
         app.insert_resource(Msaa::Off);
         app.insert_resource(ClearColor(Color::linear_rgb(0., 0., 0.)));
         app.init_state::<AppState>();
-        app.init_state::<GameState>();
+        app.add_sub_state::<GameState>();
         app.add_systems(Startup, (spawn_camera, set_initial_resolution));
     }
 }
@@ -58,9 +59,11 @@ pub enum AppState {
     #[default]
     Menu,
     Playing,
+    Settings,
 }
 
-#[derive(States, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(SubStates, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[source(AppState = AppState::Playing)]
 pub enum GameState {
     #[default]
     Home,

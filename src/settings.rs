@@ -2,29 +2,26 @@ use bevy::prelude::*;
 
 use crate::AppState;
 
-pub struct MenuPlugin;
-impl Plugin for MenuPlugin {
+pub struct SettingsPlugin;
+impl Plugin for SettingsPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, dummy_system)
-            .add_systems(OnEnter(AppState::Menu), spawn_main_menu)
-            .add_systems(Update, menu_button_press.run_if(in_state(AppState::Menu)))
-            .add_systems(OnExit(AppState::Menu), despawn_main_menu);
+            .add_systems(OnEnter(AppState::Settings), spawn_settings)
+            .add_systems(OnExit(AppState::Settings), despawn_settings);
     }
-}
-
-#[derive(Component, Clone, Copy)]
-pub struct CleanupMainMenu;
-
-#[derive(Component, Clone, Copy)]
-pub enum MainMenuButton {
-    Play,
-    Settings,
-    Exit,
 }
 
 fn dummy_system() {}
 
-fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Component)]
+pub struct CleanupSettingsMenu;
+
+#[derive(Component)]
+pub enum SettingsButton {
+    Default,
+}
+
+fn spawn_settings(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(NodeBundle {
             style: Style {
@@ -36,7 +33,7 @@ fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             ..default()
         })
-        .insert(CleanupMainMenu)
+        .insert(CleanupSettingsMenu)
         .with_children(|parent| {
             parent
                 .spawn(ButtonBundle {
@@ -53,7 +50,7 @@ fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     background_color: Color::WHITE.into(),
                     ..default()
                 })
-                .insert(MainMenuButton::Play)
+                .insert(SettingsButton::Default)
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Play",
@@ -81,7 +78,7 @@ fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     background_color: Color::WHITE.into(),
                     ..default()
                 })
-                .insert(MainMenuButton::Settings)
+                .insert(SettingsButton::Default)
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Settings",
@@ -109,7 +106,7 @@ fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     background_color: Color::WHITE.into(),
                     ..default()
                 })
-                .insert(MainMenuButton::Exit)
+                .insert(SettingsButton::Default)
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
                         "Exit",
@@ -123,41 +120,12 @@ fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn despawn_main_menu(
+fn despawn_settings(
     mut commands: Commands,
-    mut query_main_menu: Query<Entity, With<CleanupMainMenu>>,
+    mut query_main_menu: Query<Entity, With<CleanupSettingsMenu>>,
 ) {
     for entity in query_main_menu.iter_mut() {
         commands.entity(entity).despawn_recursive();
-        info!("[DESPAWNED] Main Menu Entities.");
-    }
-}
-
-fn menu_button_press(
-    mut query_button_interaction: Query<
-        (&Interaction, &MainMenuButton),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut next_state: ResMut<NextState<AppState>>,
-    mut ev_app_exit: EventWriter<AppExit>,
-) {
-    for (interaction, mmb) in &mut query_button_interaction {
-        match interaction {
-            Interaction::Pressed => match mmb {
-                MainMenuButton::Play => {
-                    next_state.set(AppState::Playing);
-                    info!("[MODIFIED] Appstate >> Playing");
-                }
-                MainMenuButton::Settings => {
-                    next_state.set(AppState::Settings);
-                    info!("[MODIFIED] Appstate >> Settings");
-                }
-                MainMenuButton::Exit => {
-                    ev_app_exit.send(AppExit::Success);
-                    info!("[EXIT] Gracefully Exiting App");
-                }
-            },
-            _ => {}
-        }
+        info!("[DESPAWNED] Settings Menu Entities.");
     }
 }
