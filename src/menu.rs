@@ -7,6 +7,7 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, dummy_system)
             .add_systems(OnEnter(AppState::Menu), spawn_main_menu)
+            .add_systems(Update, escape_to_menu)
             .add_systems(Update, menu_button_press.run_if(in_state(AppState::Menu)))
             .add_systems(OnExit(AppState::Menu), despawn_main_menu);
     }
@@ -121,6 +122,8 @@ fn spawn_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ));
                 });
         });
+
+    info!("[SPAWNED] Main Menu Entities");
 }
 
 fn despawn_main_menu(
@@ -157,6 +160,22 @@ fn menu_button_press(
                     info!("[EXIT] Gracefully Exiting App");
                 }
             },
+            _ => {}
+        }
+    }
+}
+
+fn escape_to_menu(
+    keys: Res<ButtonInput<KeyCode>>,
+    current_state: Res<State<AppState>>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    if keys.just_pressed(KeyCode::Escape) {
+        match current_state.get() {
+            AppState::Settings => {
+                next_state.set(AppState::Menu);
+                info!("[MODIFIED] Appstate >> Settings");
+            }
             _ => {}
         }
     }

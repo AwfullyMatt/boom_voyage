@@ -13,6 +13,7 @@ use character::CharacterPlugin;
 use combat::CombatPlugin;
 use menu::MenuPlugin;
 use player::PlayerPlugin;
+use settings::SettingsPlugin;
 
 pub struct GamePlugin;
 
@@ -43,7 +44,13 @@ impl Plugin for GamePlugin {
                 })
                 .set(ImagePlugin::default_nearest()),
         );
-        app.add_plugins((PlayerPlugin, CharacterPlugin, CombatPlugin, MenuPlugin));
+        app.add_plugins((
+            PlayerPlugin,
+            CharacterPlugin,
+            CombatPlugin,
+            MenuPlugin,
+            SettingsPlugin,
+        ));
         app.insert_resource(Resolutions::default());
         app.insert_resource(Msaa::Off);
         app.insert_resource(ClearColor(Color::linear_rgb(0., 0., 0.)));
