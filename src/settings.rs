@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+use crate::{AppState, Resolutions};
 
 pub struct SettingsPlugin;
 impl Plugin for SettingsPlugin {
@@ -22,13 +22,17 @@ pub struct CleanupSettingsMenu;
 
 #[derive(Component)]
 pub enum SettingsMenuButton {
-    Default,
     Dinky,
     Decent,
     Doggone,
+    Freedom,
+    Nephew,
+    Vibrate,
 }
 
 fn spawn_settings(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // TEMPLATES
+
     let button_bundle = ButtonBundle {
         style: Style {
             width: Val::Px(200.),
@@ -56,56 +60,72 @@ fn spawn_settings(mut commands: Commands, asset_server: Res<AssetServer>) {
         color: Color::WHITE,
     };
 
-    let node_bundle = commands
+    // PARENT NODE
+
+    let parent_node_bundle = commands
         .spawn(NodeBundle {
             style: Style {
                 width: Val::Percent(100.),
-                height: Val::Percent(33.),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
+                height: Val::Percent(100.),
+                flex_direction: FlexDirection::Column,
                 ..default()
             },
             ..default()
         })
         .id();
 
-    let setting_one_text = commands
+    // WINDOW NODE
+
+    let window_node_bundle = commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .id();
+
+    let window_text = commands
         .spawn(TextBundle::from_section(
-            "Winduh  ",
+            "Window  ",
             settings_text_style.clone(),
         ))
         .id();
 
     commands
-        .entity(node_bundle)
+        .entity(window_node_bundle)
         .insert(CleanupSettingsMenu)
-        .push_children(&[setting_one_text]);
+        .push_children(&[window_text]);
 
-    let button_one = commands
+    let window_button_one = commands
         .spawn(button_bundle.clone())
         .insert(SettingsMenuButton::Dinky)
         .id();
-    let button_one_text = commands
+    let window_button_one_text = commands
         .spawn(TextBundle::from_section(
             "Dinky \n(480p)",
             text_style.clone(),
         ))
         .id();
-    let button_two = commands
+    let window_button_two = commands
         .spawn(button_bundle.clone())
         .insert(SettingsMenuButton::Decent)
         .id();
-    let button_two_text = commands
+    let window_button_two_text = commands
         .spawn(TextBundle::from_section(
             "Decent\n(1080p)",
             text_style.clone(),
         ))
         .id();
-    let button_three = commands
+    let window_button_three = commands
         .spawn(button_bundle.clone())
         .insert(SettingsMenuButton::Doggone)
         .id();
-    let button_three_text = commands
+    let window_button_three_text = commands
         .spawn(TextBundle::from_section(
             "Doggone!\n(2160p)",
             text_style.clone(),
@@ -113,18 +133,98 @@ fn spawn_settings(mut commands: Commands, asset_server: Res<AssetServer>) {
         .id();
 
     commands
-        .entity(button_one)
-        .push_children(&[button_one_text]);
+        .entity(window_button_one)
+        .push_children(&[window_button_one_text]);
     commands
-        .entity(button_two)
-        .push_children(&[button_two_text]);
+        .entity(window_button_two)
+        .push_children(&[window_button_two_text]);
     commands
-        .entity(button_three)
-        .push_children(&[button_three_text]);
+        .entity(window_button_three)
+        .push_children(&[window_button_three_text]);
+
+    commands.entity(window_node_bundle).push_children(&[
+        window_button_one,
+        window_button_two,
+        window_button_three,
+    ]);
+
+    // ACCESSIBILITY NODE
+
+    let accessibility_node_bundle = commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .id();
+
+    let accessibility_text = commands
+        .spawn(TextBundle::from_section(
+            "Accessibility  ",
+            settings_text_style.clone(),
+        ))
+        .id(); // these will just be on/off toggles
 
     commands
-        .entity(node_bundle)
-        .push_children(&[button_one, button_two, button_three]);
+        .entity(accessibility_node_bundle)
+        .insert(CleanupSettingsMenu)
+        .push_children(&[accessibility_text]);
+
+    let accessibility_button_one = commands
+        .spawn(button_bundle.clone())
+        .insert(SettingsMenuButton::Freedom)
+        .id();
+    let accessibility_button_one_text = commands
+        .spawn(TextBundle::from_section(
+            "Infinite\nFreedom",
+            text_style.clone(),
+        ))
+        .id();
+    let accessibility_button_two = commands
+        .spawn(button_bundle.clone())
+        .insert(SettingsMenuButton::Nephew)
+        .id();
+    let accessibility_button_two_text = commands
+        .spawn(TextBundle::from_section(
+            "Infinite\nNephew",
+            text_style.clone(),
+        ))
+        .id();
+    let accessibility_button_three = commands
+        .spawn(button_bundle.clone())
+        .insert(SettingsMenuButton::Vibrate)
+        .id();
+    let accessibility_button_three_text = commands
+        .spawn(TextBundle::from_section(
+            "Rhythm\nVibrate",  // this will probably deplete
+            text_style.clone(), // controller charge quickly?
+        ))
+        .id();
+
+    commands
+        .entity(accessibility_button_one)
+        .push_children(&[accessibility_button_one_text]);
+    commands
+        .entity(accessibility_button_two)
+        .push_children(&[accessibility_button_two_text]);
+    commands
+        .entity(accessibility_button_three)
+        .push_children(&[accessibility_button_three_text]);
+
+    commands.entity(accessibility_node_bundle).push_children(&[
+        accessibility_button_one,
+        accessibility_button_two,
+        accessibility_button_three,
+    ]);
+
+    commands
+        .entity(parent_node_bundle)
+        .push_children(&[window_node_bundle, accessibility_node_bundle]);
 
     info!("[SPAWNED] Settings Menu Entities");
 }
@@ -145,6 +245,7 @@ fn settings_button_press(
         (Changed<Interaction>, With<Button>),
     >,
     mut query_window: Query<&mut Window>,
+    resolutions: Res<Resolutions>,
 ) {
     for (interaction, mmb) in &mut query_button_interaction {
         match interaction {
@@ -152,7 +253,9 @@ fn settings_button_press(
                 SettingsMenuButton::Dinky => {
                     let mut window = query_window.single_mut();
 
-                    window.resolution.set(640., 480.);
+                    window
+                        .resolution
+                        .set(resolutions.small.x, resolutions.small.y);
                     info!(
                         "[MODIFIED] Window.Resolution >> {}x{}",
                         window.resolution.width(),
@@ -161,7 +264,9 @@ fn settings_button_press(
                 }
                 SettingsMenuButton::Decent => {
                     let mut window = query_window.single_mut();
-                    window.resolution.set(1920., 1080.);
+                    window
+                        .resolution
+                        .set(resolutions.large.x, resolutions.large.y);
                     info!(
                         "[MODIFIED] Window.Resolution >> {}x{}",
                         window.resolution.width(),
@@ -170,7 +275,9 @@ fn settings_button_press(
                 }
                 SettingsMenuButton::Doggone => {
                     let mut window = query_window.single_mut();
-                    window.resolution.set(3840., 2160.);
+                    window
+                        .resolution
+                        .set(resolutions.ultra.x, resolutions.ultra.y);
                     info!(
                         "[MODIFIED] Window.Resolution >> {}x{}",
                         window.resolution.width(),
