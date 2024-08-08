@@ -2,6 +2,7 @@ mod character;
 mod combat;
 mod enemy;
 mod menu;
+mod metronome;
 mod player;
 mod settings;
 
@@ -12,6 +13,7 @@ use bevy::{
 use character::CharacterPlugin;
 use combat::CombatPlugin;
 use menu::MenuPlugin;
+use metronome::MetronomePlugin;
 use player::PlayerPlugin;
 use settings::SettingsPlugin;
 
@@ -50,6 +52,7 @@ impl Plugin for GamePlugin {
             CombatPlugin,
             MenuPlugin,
             SettingsPlugin,
+            MetronomePlugin,
         ));
         app.insert_resource(Resolutions::default());
         app.insert_resource(Msaa::Off);
