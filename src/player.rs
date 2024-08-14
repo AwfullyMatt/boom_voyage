@@ -11,7 +11,8 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player);
+        app.add_systems(Startup, spawn_player)
+            .init_resource::<PlayerHandle>();
     }
 }
 
@@ -43,11 +44,19 @@ impl Default for PlayerBundle {
 #[derive(Component, Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Player;
 
-fn spawn_player(mut commmands: Commands) {
+#[derive(Resource, Serialize, Deserialize, Clone, Copy, Debug, Default)]
+pub struct PlayerHandle(pub Option<Entity>);
+
+fn spawn_player(mut commmands: Commands, mut player_handle: ResMut<PlayerHandle>) {
     match deserialize_player() {
         Ok(player) => {
-            commmands.spawn(player);
+            let player = commmands.spawn(player).id();
             info!("[SPAWNED] Saved Player Bundle.");
+            player_handle.0 = Some(player);
+            info!(
+                "[INITIALIZED] Resource -- Player Handle: {}",
+                player_handle.0.unwrap()
+            );
         }
         Err(e) => {
             commmands.spawn(PlayerBundle::default());
